@@ -1,0 +1,32 @@
+version: '3.8'
+
+services:
+  vscode-web:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: vscode-web
+    ports:
+      - "8080:8080"
+    environment:
+      - HOST=0.0.0.0
+      - PORT=8080
+    volumes:
+      # Mount a workspace directory (optional - uncomment to use)
+      # - ./workspace:/home/vscode/workspace
+      # Persist user settings and extensions
+      - vscode-data:/home/vscode/.vscode-web
+    restart: unless-stopped
+    # Resource limits (optional - adjust as needed)
+    deploy:
+      resources:
+        limits:
+          cpus: '2.0'
+          memory: 4G
+        reservations:
+          cpus: '1.0'
+          memory: 2G
+
+volumes:
+  vscode-data:
+    driver: local
