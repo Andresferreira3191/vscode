@@ -75,7 +75,11 @@ ENV HOST=0.0.0.0
 ENV PORT=8080
 ENV NODE_ENV=production
 
-# Authentication environment variables (to be passed at runtime)
+# Authentication Control (set at runtime)
+# Set to 'true' to enable authentication, 'false' or leave unset to disable
+# ENV STACKCODESY_REQUIRE_AUTH=false
+
+# Authentication environment variables (to be passed at runtime when auth is enabled)
 # ENV STACKCODESY_USER_ID=""
 # ENV STACKCODESY_USER_NAME=""
 # ENV STACKCODESY_USER_EMAIL=""

@@ -7,11 +7,37 @@ StackCodeSy is a customized web-based code editor built on VSCode Code-OSS with 
 ## Features
 
 - ✅ Custom branding (StackCodeSy)
+- ✅ **Optional authentication** - Enable/disable with a single environment variable
 - ✅ Integrated authentication system
 - ✅ Shows user name and email in editor
 - ✅ Secure token-based authentication (non-JWT)
 - ✅ Docker-ready deployment
 - ✅ MIT License - fully customizable
+
+---
+
+## Authentication Control
+
+StackCodeSy includes a **flexible authentication system** that can be enabled or disabled via environment variable:
+
+| Mode | Configuration | Use Case |
+|------|---------------|----------|
+| **Public Mode** | `STACKCODESY_REQUIRE_AUTH=false` (default) | Development, testing, public editors |
+| **Authenticated Mode** | `STACKCODESY_REQUIRE_AUTH=true` | Production, private user environments |
+
+### How It Works
+
+- **When disabled** (`STACKCODESY_REQUIRE_AUTH=false` or unset):
+  - Editor runs without authentication
+  - No user credentials required
+  - Perfect for development and testing
+  - Logs: `Authentication is DISABLED`
+
+- **When enabled** (`STACKCODESY_REQUIRE_AUTH=true`):
+  - Editor requires user authentication
+  - User name and email displayed in UI
+  - Validates credentials on startup
+  - Logs: `User authenticated - Name (email)`
 
 ---
 
@@ -30,20 +56,30 @@ docker-compose build
 docker build -t stackcodesy:latest .
 ```
 
-### 2. Run Without Authentication (Testing)
+### 2. Run Without Authentication (Development/Testing)
+
+**Default mode - no configuration needed:**
 
 ```bash
+# Simply run - authentication is disabled by default
 docker-compose up
 ```
 
 Access at: `http://localhost:8080`
 
-### 3. Run With Authentication
+Logs will show:
+```
+StackCodeSy: Authentication is DISABLED (STACKCODESY_REQUIRE_AUTH is not set to true)
+StackCodeSy: Editor running in public/development mode without authentication
+```
+
+### 3. Run With Authentication (Production)
 
 Create a `.env` file:
 
 ```bash
 # .env
+STACKCODESY_REQUIRE_AUTH=true
 STACKCODESY_USER_ID=12345
 STACKCODESY_USER_NAME=John Doe
 STACKCODESY_USER_EMAIL=john@example.com
@@ -54,6 +90,12 @@ Then run:
 
 ```bash
 docker-compose up
+```
+
+Logs will show:
+```
+StackCodeSy: Authentication is ENABLED (STACKCODESY_REQUIRE_AUTH=true)
+StackCodeSy: User authenticated - John Doe (john@example.com)
 ```
 
 ---
@@ -67,6 +109,7 @@ When launching StackCodeSy for a user, pass their information via environment va
 ```bash
 docker run -d \
   -p 8080:8080 \
+  -e STACKCODESY_REQUIRE_AUTH="true" \
   -e STACKCODESY_USER_ID="12345" \
   -e STACKCODESY_USER_NAME="John Doe" \
   -e STACKCODESY_USER_EMAIL="john@example.com" \
@@ -75,7 +118,8 @@ docker run -d \
 ```
 
 **How it works:**
-- The authentication extension reads these environment variables on startup
+- Set `STACKCODESY_REQUIRE_AUTH=true` to enable authentication
+- The authentication extension reads user info from environment variables on startup
 - User is automatically authenticated
 - Name and email appear in the editor UI
 
@@ -99,6 +143,7 @@ Expose an authentication API from your platform:
 ```bash
 docker run -d \
   -p 8080:8080 \
+  -e STACKCODESY_REQUIRE_AUTH="true" \
   -e STACKCODESY_AUTH_API="https://yourplatform.com/api/stackcodesy/auth" \
   stackcodesy:latest
 ```
@@ -399,16 +444,27 @@ Your platform should implement this endpoint:
 
 ## Environment Variables Reference
 
-| Variable | Required | Description | Example |
-|----------|----------|-------------|---------|
-| `STACKCODESY_USER_ID` | No | User's unique ID | `12345` |
-| `STACKCODESY_USER_NAME` | No | User's display name | `John Doe` |
-| `STACKCODESY_USER_EMAIL` | No | User's email | `john@example.com` |
-| `STACKCODESY_AUTH_TOKEN` | No | User's auth token | `abc123...` |
-| `STACKCODESY_AUTH_API` | No | Auth API endpoint | `https://api.example.com/auth` |
-| `HOST` | Yes | Bind host | `0.0.0.0` |
-| `PORT` | Yes | Bind port | `8080` |
-| `NODE_ENV` | No | Environment | `production` |
+| Variable | Required | Description | Default | Example |
+|----------|----------|-------------|---------|---------|
+| **Authentication Control** |
+| `STACKCODESY_REQUIRE_AUTH` | No | Enable/disable authentication | `false` | `true` or `false` |
+| **Server Configuration** |
+| `HOST` | Yes | Bind host | `0.0.0.0` | `0.0.0.0` |
+| `PORT` | Yes | Bind port | `8080` | `8080` |
+| `NODE_ENV` | No | Environment | `production` | `production` |
+| **User Credentials** (only when `STACKCODESY_REQUIRE_AUTH=true`) |
+| `STACKCODESY_USER_ID` | Conditional | User's unique ID | - | `12345` |
+| `STACKCODESY_USER_NAME` | Conditional | User's display name | - | `John Doe` |
+| `STACKCODESY_USER_EMAIL` | Conditional | User's email | - | `john@example.com` |
+| `STACKCODESY_AUTH_TOKEN` | Conditional | User's auth token | - | `abc123...` |
+| **API Authentication** (alternative to user credentials) |
+| `STACKCODESY_AUTH_API` | Conditional | Auth API endpoint | - | `https://api.example.com/auth` |
+
+**Notes:**
+- When `STACKCODESY_REQUIRE_AUTH=false` (default), no authentication variables are required
+- When `STACKCODESY_REQUIRE_AUTH=true`, you must provide either:
+  - User credentials (`USER_ID`, `USER_NAME`, `USER_EMAIL`, `AUTH_TOKEN`), OR
+  - API endpoint (`STACKCODESY_AUTH_API`)
 
 ---
 

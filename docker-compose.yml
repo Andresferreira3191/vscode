@@ -13,7 +13,13 @@ services:
       - PORT=8080
       - NODE_ENV=production
 
-      # StackCodeSy Authentication (configure these from your platform)
+      # Authentication Control
+      # Set to 'true' to enable authentication, 'false' or leave unset to disable
+      # For development/testing: set to false or comment out
+      # For production: set to true and provide user credentials
+      - STACKCODESY_REQUIRE_AUTH=${STACKCODESY_REQUIRE_AUTH:-false}
+
+      # StackCodeSy Authentication (only used when STACKCODESY_REQUIRE_AUTH=true)
       # Method 1: Direct environment variables (for testing)
       - STACKCODESY_USER_ID=${STACKCODESY_USER_ID:-}
       - STACKCODESY_USER_NAME=${STACKCODESY_USER_NAME:-}

@@ -21,16 +21,27 @@ open http://localhost:8080
 # Create .env file from example
 cp .env.example .env
 
-# Edit .env and add your user details
-nano .env
+# Edit .env and enable authentication
+cat > .env << 'EOF'
+STACKCODESY_REQUIRE_AUTH=true
+STACKCODESY_USER_ID=12345
+STACKCODESY_USER_NAME=John Doe
+STACKCODESY_USER_EMAIL=john@example.com
+STACKCODESY_AUTH_TOKEN=your-secure-token
+EOF
 
 # Run with authentication
 docker-compose up
+
+# Logs will show:
+# StackCodeSy: Authentication is ENABLED
+# StackCodeSy: User authenticated - John Doe (john@example.com)
 ```
 
 ## Features
 
 - ✅ **Custom Branding** - StackCodeSy name and identity
+- ✅ **Optional Authentication** - Enable/disable with single env var
 - ✅ **Integrated Auth** - Shows user name and email in editor
 - ✅ **Secure Tokens** - Your own authentication system (non-JWT)
 - ✅ **Docker Ready** - Easy deployment with docker-compose
@@ -62,11 +73,24 @@ npm run compile-web
 # Build optimized image
 docker build -t stackcodesy:latest .
 
-# Run in production
+# Run in production with authentication
 docker run -d \
   -p 8080:8080 \
+  -e STACKCODESY_REQUIRE_AUTH="true" \
   -e STACKCODESY_AUTH_API="https://yourapi.com/auth" \
   stackcodesy:latest
+```
+
+## Authentication Control
+
+Control authentication with a single environment variable:
+
+```bash
+# Development mode (default) - No authentication required
+STACKCODESY_REQUIRE_AUTH=false  # or leave unset
+
+# Production mode - Authentication required
+STACKCODESY_REQUIRE_AUTH=true
 ```
 
 ## License

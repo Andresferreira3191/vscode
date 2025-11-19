@@ -166,7 +166,26 @@ class StackCodeSyAuthenticationProvider implements vscode.AuthenticationProvider
 	}
 }
 
+/**
+ * Check if authentication is required
+ * Set STACKCODESY_REQUIRE_AUTH=true to enable authentication
+ * Set STACKCODESY_REQUIRE_AUTH=false or leave unset to disable
+ */
+function isAuthenticationRequired(): boolean {
+	const requireAuth = process.env.STACKCODESY_REQUIRE_AUTH;
+	return requireAuth === 'true' || requireAuth === '1' || requireAuth === 'yes';
+}
+
 export function activate(context: vscode.ExtensionContext) {
+	const authRequired = isAuthenticationRequired();
+
+	if (!authRequired) {
+		console.log('StackCodeSy: Authentication is DISABLED (STACKCODESY_REQUIRE_AUTH is not set to true)');
+		console.log('StackCodeSy: Editor running in public/development mode without authentication');
+		return;
+	}
+
+	console.log('StackCodeSy: Authentication is ENABLED (STACKCODESY_REQUIRE_AUTH=true)');
 	console.log('StackCodeSy Authentication Provider is now active');
 
 	const provider = new StackCodeSyAuthenticationProvider();
@@ -184,6 +203,10 @@ export function activate(context: vscode.ExtensionContext) {
 	provider.getSessions().then(sessions => {
 		if (sessions.length > 0) {
 			console.log('StackCodeSy: User authenticated -', sessions[0].account.label);
+		} else {
+			console.warn('StackCodeSy: Authentication is required but no user credentials found!');
+			console.warn('StackCodeSy: Set STACKCODESY_USER_ID, STACKCODESY_USER_NAME, STACKCODESY_USER_EMAIL, STACKCODESY_AUTH_TOKEN');
+			console.warn('StackCodeSy: Or configure STACKCODESY_AUTH_API endpoint');
 		}
 	});
 }
