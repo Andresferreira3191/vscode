@@ -78,6 +78,68 @@ services:
       # Prevents excessively long commands (potential attack vector)
       - STACKCODESY_TERMINAL_MAX_COMMAND_LENGTH=${STACKCODESY_TERMINAL_MAX_COMMAND_LENGTH:-1000}
 
+      # ================================
+      # Extension Marketplace Security
+      # ================================
+      # Extension marketplace control: disabled, whitelist, full
+      - STACKCODESY_EXTENSION_MODE=${STACKCODESY_EXTENSION_MODE:-full}
+      # Comma-separated list of approved extension IDs
+      - STACKCODESY_EXTENSION_WHITELIST=${STACKCODESY_EXTENSION_WHITELIST:-}
+      # Path to approved extensions file
+      - STACKCODESY_EXTENSION_WHITELIST_FILE=${STACKCODESY_EXTENSION_WHITELIST_FILE:-/stackcodesy/config/approved-extensions.txt}
+
+      # ================================
+      # File System Security
+      # ================================
+      # Disk quota in MB (0 = unlimited)
+      - STACKCODESY_DISK_QUOTA_MB=${STACKCODESY_DISK_QUOTA_MB:-5000}
+      # Maximum file size in MB
+      - STACKCODESY_MAX_FILE_SIZE_MB=${STACKCODESY_MAX_FILE_SIZE_MB:-100}
+      # Blocked file extensions
+      - STACKCODESY_BLOCKED_FILE_TYPES=${STACKCODESY_BLOCKED_FILE_TYPES:-.exe,.dll,.so.malicious}
+      # Enable filesystem monitoring
+      - STACKCODESY_ENABLE_FILE_MONITORING=${STACKCODESY_ENABLE_FILE_MONITORING:-false}
+      # Read-only directories
+      - STACKCODESY_READONLY_DIRS=${STACKCODESY_READONLY_DIRS:-}
+
+      # ================================
+      # Network Security
+      # ================================
+      # Enable egress filtering (requires CAP_NET_ADMIN capability)
+      - STACKCODESY_ENABLE_EGRESS_FILTER=${STACKCODESY_ENABLE_EGRESS_FILTER:-false}
+      # Block all outbound traffic
+      - STACKCODESY_BLOCK_ALL_OUTBOUND=${STACKCODESY_BLOCK_ALL_OUTBOUND:-false}
+      # Allowed outbound ports
+      - STACKCODESY_ALLOWED_PORTS=${STACKCODESY_ALLOWED_PORTS:-80,443}
+      # Allowed domains
+      - STACKCODESY_ALLOWED_DOMAINS=${STACKCODESY_ALLOWED_DOMAINS:-}
+      # Enable DNS filtering
+      - STACKCODESY_ENABLE_DNS_FILTER=${STACKCODESY_ENABLE_DNS_FILTER:-false}
+
+      # ================================
+      # Audit Logging
+      # ================================
+      # Enable comprehensive audit logging
+      - STACKCODESY_ENABLE_AUDIT_LOG=${STACKCODESY_ENABLE_AUDIT_LOG:-true}
+      # Audit log directory
+      - STACKCODESY_AUDIT_LOG_DIR=${STACKCODESY_AUDIT_LOG_DIR:-/var/log/stackcodesy}
+      # Log retention in days
+      - STACKCODESY_AUDIT_LOG_RETENTION_DAYS=${STACKCODESY_AUDIT_LOG_RETENTION_DAYS:-30}
+      # Log terminal commands
+      - STACKCODESY_LOG_TERMINAL_COMMANDS=${STACKCODESY_LOG_TERMINAL_COMMANDS:-true}
+      # Log file access
+      - STACKCODESY_LOG_FILE_ACCESS=${STACKCODESY_LOG_FILE_ACCESS:-false}
+      # Log authentication events
+      - STACKCODESY_LOG_AUTH_EVENTS=${STACKCODESY_LOG_AUTH_EVENTS:-true}
+
+      # ================================
+      # Content Security Policy
+      # ================================
+      # Enable CSP headers
+      - STACKCODESY_ENABLE_CSP=${STACKCODESY_ENABLE_CSP:-true}
+      # CSP policy level: strict, moderate, relaxed
+      - STACKCODESY_CSP_POLICY=${STACKCODESY_CSP_POLICY:-relaxed}
+
     volumes:
       # Workspace directory - mount your project here
       # For Swarm: use named volumes or NFS mounts
@@ -151,6 +213,30 @@ services:
       timeout: 10s
       retries: 3
       start_period: 90s
+
+    # Security options
+    # Uncomment the following for enhanced security:
+    # security_opt:
+    #   # AppArmor profile (requires profile to be loaded on host)
+    #   - apparmor=stackcodesy
+    #   # Seccomp profile (syscall filtering)
+    #   - seccomp=./security/seccomp-profile.json
+    #   # Disable new privileges
+    #   - no-new-privileges:true
+
+    # Additional security capabilities
+    # For network filtering, uncomment the following:
+    # cap_add:
+    #   - NET_ADMIN
+    # For maximum security, drop all capabilities:
+    # cap_drop:
+    #   - ALL
+    # Then add only required capabilities:
+    # cap_add:
+    #   - CHOWN
+    #   - DAC_OVERRIDE
+    #   - SETGID
+    #   - SETUID
 
     # Logging (for Swarm)
     logging:

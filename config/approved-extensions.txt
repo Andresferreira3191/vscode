@@ -1,0 +1,57 @@
+# StackCodeSy Approved Extensions Whitelist
+# One extension ID per line
+# Lines starting with # are comments and will be ignored
+# Extension IDs format: publisher.extension-name
+
+# ================================
+# Language Support - Essential
+# ================================
+ms-python.python
+ms-python.vscode-pylance
+ms-vscode.cpptools
+golang.go
+rust-lang.rust-analyzer
+ms-dotnettools.csharp
+
+# ================================
+# JavaScript/TypeScript
+# ================================
+dbaeumer.vscode-eslint
+esbenp.prettier-vscode
+ms-vscode.vscode-typescript-next
+
+# ================================
+# Version Control
+# ================================
+eamodio.gitlens
+github.vscode-pull-request-github
+mhutchie.git-graph
+
+# ================================
+# Docker & Containers
+# ================================
+ms-azuretools.vscode-docker
+ms-kubernetes-tools.vscode-kubernetes-tools
+
+# ================================
+# Code Quality & Formatting
+# ================================
+editorconfig.editorconfig
+streetsidesoftware.code-spell-checker
+
+# ================================
+# Productivity
+# ================================
+formulahendry.code-runner
+visualstudioexptteam.vscodeintellicode
+
+# ================================
+# Themes (Optional - can be removed)
+# ================================
+# pkief.material-icon-theme
+# dracula-theme.theme-dracula
+
+# ================================
+# Add your custom approved extensions below
+# ================================
+

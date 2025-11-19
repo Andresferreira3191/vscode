@@ -40,20 +40,31 @@ docker-compose up
 
 ## Features
 
+### Core Features
 - ✅ **Custom Branding** - StackCodeSy name and identity
 - ✅ **Optional Authentication** - Enable/disable with single env var
 - ✅ **Integrated Auth** - Shows user name and email in editor
 - ✅ **Secure Tokens** - Your own authentication system (non-JWT)
-- ✅ **Granular Terminal Control** - 3 security modes: disabled, restricted, full (NEW)
-- ✅ **Restricted Terminal Mode** - Allow `yarn build` but block dangerous commands (NEW)
-- ✅ **Docker Swarm Ready** - Production deployment with high availability (NEW)
-- ✅ **Security Hardened** - Comprehensive security analysis and hardening guide
+- ✅ **Docker Swarm Ready** - Production deployment with high availability
 - ✅ **MIT License** - Fully customizable and redistributable
+
+### Security Features (NEW)
+- ✅ **Granular Terminal Control** - 3 security modes: disabled, restricted, full
+- ✅ **Restricted Terminal Mode** - Allow `yarn build` but block dangerous commands
+- ✅ **Extension Marketplace Whitelist** - Control which extensions users can install
+- ✅ **File System Security** - Disk quotas, file size limits, type restrictions
+- ✅ **Network Security** - Egress filtering, domain whitelist, port control
+- ✅ **Comprehensive Audit Logging** - Track commands, file access, auth events
+- ✅ **Content Security Policy** - HTTP security headers (XSS, clickjacking protection)
+- ✅ **Runtime Protection** - AppArmor/Seccomp profiles for syscall filtering
+- ✅ **Security Scanning** - Automated vulnerability scanning with Trivy/Grype
 
 ## Documentation
 
 - [STACKCODESY_INTEGRATION.md](STACKCODESY_INTEGRATION.md) - Complete integration guide
 - [SECURITY_REPORT.md](SECURITY_REPORT.md) - Comprehensive security analysis and hardening guide
+- [SECURITY_CONFIGURATION.md](SECURITY_CONFIGURATION.md) - Security configuration guide with all features
+- [ADDITIONAL_SECURITY.md](ADDITIONAL_SECURITY.md) - Advanced security hardening measures
 - [DOCKER_SWARM_DEPLOYMENT.md](DOCKER_SWARM_DEPLOYMENT.md) - Docker Swarm production deployment guide
 
 ## Build from Source
