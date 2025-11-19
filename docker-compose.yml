@@ -1,32 +1,82 @@
 version: '3.8'
 
 services:
-  vscode-web:
+  stackcodesy:
     build:
       context: .
       dockerfile: Dockerfile
-    container_name: vscode-web
+    container_name: stackcodesy-editor
     ports:
       - "8080:8080"
     environment:
       - HOST=0.0.0.0
       - PORT=8080
+      - NODE_ENV=production
+
+      # StackCodeSy Authentication (configure these from your platform)
+      # Method 1: Direct environment variables (for testing)
+      - STACKCODESY_USER_ID=${STACKCODESY_USER_ID:-}
+      - STACKCODESY_USER_NAME=${STACKCODESY_USER_NAME:-}
+      - STACKCODESY_USER_EMAIL=${STACKCODESY_USER_EMAIL:-}
+      - STACKCODESY_AUTH_TOKEN=${STACKCODESY_AUTH_TOKEN:-}
+
+      # Method 2: API endpoint to validate authentication
+      # Your platform can expose an API that validates user sessions
+      - STACKCODESY_AUTH_API=${STACKCODESY_AUTH_API:-}
+
     volumes:
-      # Mount a workspace directory (optional - uncomment to use)
-      # - ./workspace:/home/vscode/workspace
+      # Mount workspace directory (optional - uncomment to use)
+      # - ./workspace:/home/stackcodesy/workspace
+
       # Persist user settings and extensions
-      - vscode-data:/home/vscode/.vscode-web
+      - stackcodesy-data:/home/stackcodesy/.stackcodesy
+
+      # If you want to persist projects (optional)
+      # - ./projects:/home/stackcodesy/projects
+
     restart: unless-stopped
-    # Resource limits (optional - adjust as needed)
+
+    # Resource limits (adjust as needed)
     deploy:
       resources:
         limits:
           cpus: '2.0'
           memory: 4G
         reservations:
-          cpus: '1.0'
-          memory: 2G
+          cpus: '0.5'
+          memory: 1G
+
+    # Networking
+    networks:
+      - stackcodesy-network
+
+    # Health check
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 90s
+
+  # Optional: Add a reverse proxy (nginx) for SSL and routing
+  # nginx:
+  #   image: nginx:alpine
+  #   container_name: stackcodesy-proxy
+  #   ports:
+  #     - "443:443"
+  #     - "80:80"
+  #   volumes:
+  #     - ./nginx.conf:/etc/nginx/nginx.conf:ro
+  #     - ./ssl:/etc/nginx/ssl:ro
+  #   depends_on:
+  #     - stackcodesy
+  #   networks:
+  #     - stackcodesy-network
 
 volumes:
-  vscode-data:
+  stackcodesy-data:
     driver: local
+
+networks:
+  stackcodesy-network:
+    driver: bridge

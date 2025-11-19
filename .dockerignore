@@ -1,0 +1,70 @@
+# Git
+.git
+.gitignore
+.gitattributes
+
+# CI/CD
+.github
+.devcontainer
+.vscode-test
+.azure-pipelines
+
+# Build artifacts
+*.vsix
+out/
+dist/
+.build/
+**/*.js.map
+**/*.d.ts.map
+
+# Node modules (will be installed in container)
+node_modules
+**/node_modules
+
+# Logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+lerna-debug.log*
+
+# Test files
+test/
+**/test/
+**/*.test.ts
+**/*.test.js
+
+# Documentation
+*.md
+!README.md
+docs/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Temporary files
+*.tmp
+*.temp
+.cache/
+
+# Coverage
+coverage/
+*.lcov
+.nyc_output/
+
+# Build scripts not needed in production
+scripts/test*.sh
+scripts/code-perf.js
+
+# Large unnecessary files
+*.mp4
+*.mov
+*.avi
