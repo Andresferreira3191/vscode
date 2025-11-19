@@ -1,0 +1,50 @@
+version: '3.8'
+
+# Development docker-compose configuration
+# This file provides a simpler setup for local development
+
+services:
+  stackcodesy:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: stackcodesy-dev
+    ports:
+      - "8080:8080"
+    environment:
+      - HOST=0.0.0.0
+      - PORT=8080
+      - NODE_ENV=development
+
+      # No authentication for development
+      - STACKCODESY_REQUIRE_AUTH=false
+
+      # Full terminal access for development
+      - STACKCODESY_TERMINAL_MODE=full
+
+    volumes:
+      # Mount current directory as workspace
+      - ./workspace:/workspace
+
+      # User settings
+      - stackcodesy-data-dev:/home/stackcodesy/.stackcodesy
+
+    restart: unless-stopped
+
+    networks:
+      - stackcodesy-dev-network
+
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 90s
+
+volumes:
+  stackcodesy-data-dev:
+    driver: local
+
+networks:
+  stackcodesy-dev-network:
+    driver: bridge

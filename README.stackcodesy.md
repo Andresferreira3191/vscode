@@ -44,15 +44,17 @@ docker-compose up
 - ✅ **Optional Authentication** - Enable/disable with single env var
 - ✅ **Integrated Auth** - Shows user name and email in editor
 - ✅ **Secure Tokens** - Your own authentication system (non-JWT)
-- ✅ **Terminal Control** - Disable terminals for security (NEW)
-- ✅ **Docker Ready** - Easy deployment with docker-compose
-- ✅ **Security Hardened** - Production-ready with comprehensive security guide
+- ✅ **Granular Terminal Control** - 3 security modes: disabled, restricted, full (NEW)
+- ✅ **Restricted Terminal Mode** - Allow `yarn build` but block dangerous commands (NEW)
+- ✅ **Docker Swarm Ready** - Production deployment with high availability (NEW)
+- ✅ **Security Hardened** - Comprehensive security analysis and hardening guide
 - ✅ **MIT License** - Fully customizable and redistributable
 
 ## Documentation
 
 - [STACKCODESY_INTEGRATION.md](STACKCODESY_INTEGRATION.md) - Complete integration guide
 - [SECURITY_REPORT.md](SECURITY_REPORT.md) - Comprehensive security analysis and hardening guide
+- [DOCKER_SWARM_DEPLOYMENT.md](DOCKER_SWARM_DEPLOYMENT.md) - Docker Swarm production deployment guide
 
 ## Build from Source
 
@@ -72,33 +74,47 @@ npm run compile-web
 
 ## Production Deployment
 
-### Standard Production (Trusted Users)
+### Docker Compose (Development)
 
 ```bash
-# Build optimized image
-docker build -t stackcodesy:latest .
-
-# Run with authentication
-docker run -d \
-  -p 8080:8080 \
-  -e STACKCODESY_REQUIRE_AUTH="true" \
-  -e STACKCODESY_AUTH_API="https://yourapi.com/auth" \
-  stackcodesy:latest
+# Development mode (local testing)
+docker-compose -f docker-compose.dev.yml up
 ```
 
-### Maximum Security (Untrusted Users)
+### Docker Swarm (Production - RECOMMENDED)
 
 ```bash
-# Run with authentication AND disabled terminals
-docker run -d \
-  -p 8080:8080 \
-  -e STACKCODESY_REQUIRE_AUTH="true" \
-  -e STACKCODESY_ENABLE_TERMINAL="false" \
-  -e STACKCODESY_AUTH_API="https://yourapi.com/auth" \
-  --read-only \
-  --cap-drop=ALL \
-  --security-opt=no-new-privileges:true \
-  stackcodesy:latest
+# Initialize Swarm (if not already done)
+docker swarm init
+
+# Deploy stack with restricted terminals
+docker stack deploy -c docker-compose.yml stackcodesy
+
+# Scale to multiple replicas
+docker service scale stackcodesy_stackcodesy=3
+```
+
+### Standard Production (Restricted Terminals)
+
+```bash
+# Build platforms - allow build commands but restrict dangerous operations
+docker stack deploy \
+  --env STACKCODESY_REQUIRE_AUTH=true \
+  --env STACKCODESY_TERMINAL_MODE=restricted \
+  --env STACKCODESY_TERMINAL_ALLOWED_COMMANDS=npm,yarn,node,git,make \
+  -c docker-compose.yml \
+  stackcodesy
+```
+
+### Maximum Security (Terminals Disabled)
+
+```bash
+# For public platforms - no terminal access
+docker stack deploy \
+  --env STACKCODESY_REQUIRE_AUTH=true \
+  --env STACKCODESY_TERMINAL_MODE=disabled \
+  -c docker-compose.yml \
+  stackcodesy
 ```
 
 ## Security Controls
@@ -113,21 +129,27 @@ STACKCODESY_REQUIRE_AUTH=false  # or leave unset
 STACKCODESY_REQUIRE_AUTH=true
 ```
 
-### Terminal Control (Security Feature)
+### Terminal Security Modes (Granular Control)
 
 ```bash
-# Development mode (default) - Terminals enabled
-STACKCODESY_ENABLE_TERMINAL=true  # or leave unset
+# Mode 1: DISABLED - No terminal access (maximum security)
+STACKCODESY_TERMINAL_MODE=disabled
 
-# Production mode - Terminals disabled (recommended for untrusted users)
-STACKCODESY_ENABLE_TERMINAL=false
+# Mode 2: RESTRICTED - Limited commands only (RECOMMENDED for production)
+STACKCODESY_TERMINAL_MODE=restricted
+STACKCODESY_TERMINAL_WORKSPACE_ONLY=true
+STACKCODESY_TERMINAL_ALLOWED_COMMANDS=npm,yarn,node,git,python,make
+STACKCODESY_TERMINAL_BLOCKED_COMMANDS=rm -rf,sudo,wget,curl
+
+# Mode 3: FULL - Complete access (development only)
+STACKCODESY_TERMINAL_MODE=full
 ```
 
-**Why disable terminals?**
-- Prevents arbitrary command execution
-- Blocks potential container escape attempts
-- Eliminates primary Remote Code Execution (RCE) vector
-- Required for multi-tenant environments
+**Restricted Mode Benefits:**
+- ✅ Users can run: `yarn build`, `npm install`, `git commit`
+- ❌ Users CANNOT run: `rm -rf /`, `sudo`, `wget malicious.com`
+- ❌ Users CANNOT escape workspace directory
+- ✅ Perfect for build platforms and coding environments
 
 See [SECURITY_REPORT.md](SECURITY_REPORT.md) for comprehensive security guidelines.
 
