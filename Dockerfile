@@ -79,6 +79,10 @@ ENV NODE_ENV=production
 # Set to 'true' to enable authentication, 'false' or leave unset to disable
 # ENV STACKCODESY_REQUIRE_AUTH=false
 
+# Terminal Control (set at runtime)
+# Set to 'false' to DISABLE terminal access (security), 'true' or leave unset to enable
+# ENV STACKCODESY_ENABLE_TERMINAL=true
+
 # Authentication environment variables (to be passed at runtime when auth is enabled)
 # ENV STACKCODESY_USER_ID=""
 # ENV STACKCODESY_USER_NAME=""
@@ -89,6 +93,9 @@ ENV NODE_ENV=production
 # Health check
 HEALTHCHECK --interval=30s --timeout=10s --start-period=90s --retries=3 \
     CMD curl -f http://localhost:8080 || exit 1
+
+# Set entrypoint for security configuration
+ENTRYPOINT ["/stackcodesy/resources/server/web/security/entrypoint.sh"]
 
 # Start StackCodeSy Web server
 # Note: Remove --without-connection-token in production and use --connection-token-file

@@ -44,12 +44,15 @@ docker-compose up
 - ✅ **Optional Authentication** - Enable/disable with single env var
 - ✅ **Integrated Auth** - Shows user name and email in editor
 - ✅ **Secure Tokens** - Your own authentication system (non-JWT)
+- ✅ **Terminal Control** - Disable terminals for security (NEW)
 - ✅ **Docker Ready** - Easy deployment with docker-compose
+- ✅ **Security Hardened** - Production-ready with comprehensive security guide
 - ✅ **MIT License** - Fully customizable and redistributable
 
 ## Documentation
 
-See [STACKCODESY_INTEGRATION.md](STACKCODESY_INTEGRATION.md) for complete integration guide.
+- [STACKCODESY_INTEGRATION.md](STACKCODESY_INTEGRATION.md) - Complete integration guide
+- [SECURITY_REPORT.md](SECURITY_REPORT.md) - Comprehensive security analysis and hardening guide
 
 ## Build from Source
 
@@ -69,11 +72,13 @@ npm run compile-web
 
 ## Production Deployment
 
+### Standard Production (Trusted Users)
+
 ```bash
 # Build optimized image
 docker build -t stackcodesy:latest .
 
-# Run in production with authentication
+# Run with authentication
 docker run -d \
   -p 8080:8080 \
   -e STACKCODESY_REQUIRE_AUTH="true" \
@@ -81,9 +86,24 @@ docker run -d \
   stackcodesy:latest
 ```
 
-## Authentication Control
+### Maximum Security (Untrusted Users)
 
-Control authentication with a single environment variable:
+```bash
+# Run with authentication AND disabled terminals
+docker run -d \
+  -p 8080:8080 \
+  -e STACKCODESY_REQUIRE_AUTH="true" \
+  -e STACKCODESY_ENABLE_TERMINAL="false" \
+  -e STACKCODESY_AUTH_API="https://yourapi.com/auth" \
+  --read-only \
+  --cap-drop=ALL \
+  --security-opt=no-new-privileges:true \
+  stackcodesy:latest
+```
+
+## Security Controls
+
+### Authentication Control
 
 ```bash
 # Development mode (default) - No authentication required
@@ -92,6 +112,24 @@ STACKCODESY_REQUIRE_AUTH=false  # or leave unset
 # Production mode - Authentication required
 STACKCODESY_REQUIRE_AUTH=true
 ```
+
+### Terminal Control (Security Feature)
+
+```bash
+# Development mode (default) - Terminals enabled
+STACKCODESY_ENABLE_TERMINAL=true  # or leave unset
+
+# Production mode - Terminals disabled (recommended for untrusted users)
+STACKCODESY_ENABLE_TERMINAL=false
+```
+
+**Why disable terminals?**
+- Prevents arbitrary command execution
+- Blocks potential container escape attempts
+- Eliminates primary Remote Code Execution (RCE) vector
+- Required for multi-tenant environments
+
+See [SECURITY_REPORT.md](SECURITY_REPORT.md) for comprehensive security guidelines.
 
 ## License
 

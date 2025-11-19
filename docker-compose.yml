@@ -19,6 +19,11 @@ services:
       # For production: set to true and provide user credentials
       - STACKCODESY_REQUIRE_AUTH=${STACKCODESY_REQUIRE_AUTH:-false}
 
+      # Terminal Control (Security Feature)
+      # Set to 'false' to DISABLE terminal access (recommended for production)
+      # Set to 'true' or leave unset to ENABLE terminal access (default)
+      - STACKCODESY_ENABLE_TERMINAL=${STACKCODESY_ENABLE_TERMINAL:-true}
+
       # StackCodeSy Authentication (only used when STACKCODESY_REQUIRE_AUTH=true)
       # Method 1: Direct environment variables (for testing)
       - STACKCODESY_USER_ID=${STACKCODESY_USER_ID:-}
