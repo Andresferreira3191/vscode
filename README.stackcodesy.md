@@ -8,11 +8,15 @@ A customized web-based code editor built on VSCode Code-OSS with integrated auth
 # 1. Build the Docker image
 docker-compose build
 
-# 2. Run the editor
+# 2. Run the editor (default port 8080)
 docker-compose up
 
 # 3. Access the editor
 open http://localhost:8080
+
+# Custom port (e.g., 3000)
+STACKCODESY_PORT=3000 docker-compose up
+# Access on http://localhost:3000
 ```
 
 ## With Authentication
@@ -62,10 +66,11 @@ docker-compose up
 ## Documentation
 
 - [STACKCODESY_INTEGRATION.md](STACKCODESY_INTEGRATION.md) - Complete integration guide
-- [SECURITY_REPORT.md](SECURITY_REPORT.md) - Comprehensive security analysis and hardening guide
 - [SECURITY_CONFIGURATION.md](SECURITY_CONFIGURATION.md) - Security configuration guide with all features
+- [SECURITY_REPORT.md](SECURITY_REPORT.md) - Comprehensive security analysis and hardening guide
 - [ADDITIONAL_SECURITY.md](ADDITIONAL_SECURITY.md) - Advanced security hardening measures
 - [DOCKER_SWARM_DEPLOYMENT.md](DOCKER_SWARM_DEPLOYMENT.md) - Docker Swarm production deployment guide
+- [docs/PORT_CONFIGURATION.md](docs/PORT_CONFIGURATION.md) - Port configuration guide
 
 ## Build from Source
 

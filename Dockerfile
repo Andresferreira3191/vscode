@@ -67,13 +67,16 @@ COPY --from=builder --chown=stackcodesy:stackcodesy /stackcodesy /stackcodesy
 # Switch to non-root user
 USER stackcodesy
 
-# Expose port 8080
+# Expose port (can be changed via PORT env var)
 EXPOSE 8080
 
 # Environment variables for StackCodeSy
 ENV HOST=0.0.0.0
 ENV PORT=8080
 ENV NODE_ENV=production
+
+# Note: To change the port, set PORT environment variable at runtime
+# Example: docker run -e PORT=3000 -p 3000:3000 stackcodesy
 
 # Authentication Control (set at runtime)
 # Set to 'true' to enable authentication, 'false' or leave unset to disable
@@ -90,13 +93,14 @@ ENV NODE_ENV=production
 # ENV STACKCODESY_AUTH_TOKEN=""
 # ENV STACKCODESY_AUTH_API=""
 
-# Health check
+# Health check (uses PORT env var)
 HEALTHCHECK --interval=30s --timeout=10s --start-period=90s --retries=3 \
-    CMD curl -f http://localhost:8080 || exit 1
+    CMD curl -f http://localhost:${PORT:-8080} || exit 1
 
 # Set entrypoint for security configuration
 ENTRYPOINT ["/stackcodesy/resources/server/web/security/entrypoint.sh"]
 
 # Start StackCodeSy Web server
-# Note: Remove --without-connection-token in production and use --connection-token-file
-CMD ["./scripts/code-web.sh", "--host", "0.0.0.0", "--port", "8080", "--without-connection-token"]
+# Note: The port is controlled by the PORT environment variable (default: 8080)
+# The entrypoint will pass the correct port to code-web.sh
+CMD ["./scripts/code-web.sh", "--without-connection-token"]

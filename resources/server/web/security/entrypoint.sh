@@ -71,24 +71,40 @@ echo -e "${BLUE}=========================================${NC}"
 echo -e "${GREEN}Security Configuration Summary${NC}"
 echo -e "${BLUE}=========================================${NC}"
 echo ""
-echo "Authentication: ${STACKCODESY_REQUIRE_AUTH:-false}"
-echo "Terminal Mode: ${STACKCODESY_TERMINAL_MODE:-full}"
-echo "Extension Mode: ${STACKCODESY_EXTENSION_MODE:-full}"
-echo "Audit Logging: ${STACKCODESY_ENABLE_AUDIT_LOG:-true}"
-echo "Disk Quota: ${STACKCODESY_DISK_QUOTA_MB:-5000}MB"
-echo "Egress Filter: ${STACKCODESY_ENABLE_EGRESS_FILTER:-false}"
-echo "CSP Enabled: ${STACKCODESY_ENABLE_CSP:-true}"
+echo "Server Configuration:"
+echo "  Host: ${HOST:-0.0.0.0}"
+echo "  Port: ${PORT:-8080}"
+echo ""
+echo "Security Settings:"
+echo "  Authentication: ${STACKCODESY_REQUIRE_AUTH:-false}"
+echo "  Terminal Mode: ${STACKCODESY_TERMINAL_MODE:-full}"
+echo "  Extension Mode: ${STACKCODESY_EXTENSION_MODE:-full}"
+echo "  Audit Logging: ${STACKCODESY_ENABLE_AUDIT_LOG:-true}"
+echo "  Disk Quota: ${STACKCODESY_DISK_QUOTA_MB:-5000}MB"
+echo "  Egress Filter: ${STACKCODESY_ENABLE_EGRESS_FILTER:-false}"
+echo "  CSP Enabled: ${STACKCODESY_ENABLE_CSP:-true}"
 echo ""
 
 # Log startup event
 if [ -f /usr/local/bin/audit-log.sh ]; then
-    /usr/local/bin/audit-log.sh "system" "StackCodeSy starting with security configuration" "INFO" 2>/dev/null || true
+    /usr/local/bin/audit-log.sh "system" "StackCodeSy starting on ${HOST:-0.0.0.0}:${PORT:-8080} with security configuration" "INFO" 2>/dev/null || true
 fi
 
 echo -e "${BLUE}=========================================${NC}"
-echo -e "${GREEN}Starting StackCodeSy Editor...${NC}"
+echo -e "${GREEN}Starting StackCodeSy Editor on ${HOST:-0.0.0.0}:${PORT:-8080}...${NC}"
 echo -e "${BLUE}=========================================${NC}"
 echo ""
 
-# Execute the original command (code-web.sh)
-exec "$@"
+# Execute the original command with host and port
+# If the command is code-web.sh, inject host and port parameters
+if [[ "$1" == *"code-web.sh"* ]]; then
+    # Extract the script path and any additional arguments
+    SCRIPT="$1"
+    shift
+
+    # Build the command with host and port
+    exec "$SCRIPT" --host "${HOST:-0.0.0.0}" --port "${PORT:-8080}" "$@"
+else
+    # For other commands, execute as-is
+    exec "$@"
+fi
