@@ -56,8 +56,8 @@ RUN apt-get update && apt-get install -y \
     curl \
     && rm -rf /var/lib/apt/lists/*
 
-# Create non-root user
-RUN useradd -m -u 1000 -s /bin/bash stackcodesy
+# Create non-root user (UID 1001 to avoid conflict with node user at 1000)
+RUN useradd -m -u 1001 -s /bin/bash stackcodesy
 
 WORKDIR /stackcodesy
 
