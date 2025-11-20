@@ -6,18 +6,31 @@ A customized web-based code editor built on VSCode Code-OSS with integrated auth
 
 ```bash
 # 1. Build the Docker image
-docker-compose build
+docker compose build
 
 # 2. Run the editor (default port 8080)
-docker-compose up
+docker compose up
 
 # 3. Access the editor
 open http://localhost:8080
 
 # Custom port (e.g., 3000)
-STACKCODESY_PORT=3000 docker-compose up
+STACKCODESY_PORT=3000 docker compose up
 # Access on http://localhost:3000
 ```
+
+### Multi-Architecture Support
+
+StackCodeSy supports both **AMD64** (Intel/AMD) and **ARM64** (Mac M1/M2/M3, ARM servers):
+
+```bash
+# Build for multiple architectures
+./scripts/build-multiarch.sh stackcodesy latest
+
+# Docker automatically uses the correct architecture for your machine
+```
+
+See [docs/MULTIARCH_BUILD.md](docs/MULTIARCH_BUILD.md) for detailed multi-arch build instructions.
 
 ## With Authentication
 
@@ -71,6 +84,7 @@ docker-compose up
 - [ADDITIONAL_SECURITY.md](ADDITIONAL_SECURITY.md) - Advanced security hardening measures
 - [DOCKER_SWARM_DEPLOYMENT.md](DOCKER_SWARM_DEPLOYMENT.md) - Docker Swarm production deployment guide
 - [docs/PORT_CONFIGURATION.md](docs/PORT_CONFIGURATION.md) - Port configuration guide
+- [docs/MULTIARCH_BUILD.md](docs/MULTIARCH_BUILD.md) - Multi-architecture build guide (AMD64/ARM64)
 
 ## Build from Source
 
