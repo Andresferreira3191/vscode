@@ -19,8 +19,8 @@ RUN apt-get update && apt-get install -y \
 # Set working directory
 WORKDIR /stackcodesy
 
-# Copy package files first for better layer caching
-COPY package.json package-lock.json* yarn.lock* ./
+# Copy package files and .nvmrc first for better layer caching
+COPY package.json package-lock.json* yarn.lock* .nvmrc ./
 COPY build build/
 COPY scripts scripts/
 
