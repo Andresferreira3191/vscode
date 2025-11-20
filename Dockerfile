@@ -24,6 +24,9 @@ COPY package.json package-lock.json* yarn.lock* .nvmrc .npmrc ./
 COPY build build/
 COPY scripts scripts/
 
+# Copy remote module configuration (needed by preinstall script)
+COPY remote/package.json remote/.npmrc remote/
+
 # Install dependencies
 RUN npm ci --legacy-peer-deps || npm install --legacy-peer-deps
 
