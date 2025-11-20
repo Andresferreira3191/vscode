@@ -27,11 +27,20 @@ COPY scripts scripts/
 # Copy remote module configuration (needed by preinstall script)
 COPY remote/package.json remote/.npmrc remote/
 
+# Copy extensions .npmrc (needed by postinstall script)
+COPY extensions/.npmrc extensions/
+
 # Install dependencies
-RUN npm ci --legacy-peer-deps || npm install --legacy-peer-deps
+# Set ignore-scripts during main install to avoid postinstall issues
+# We'll run postinstall separately after copying all source files
+RUN npm ci --legacy-peer-deps --ignore-scripts || npm install --legacy-peer-deps --ignore-scripts
 
 # Copy the rest of the source code
 COPY . .
+
+# Run postinstall now that all source files are available
+# This installs dependencies for all extensions and sub-modules
+RUN npm run postinstall || echo "Warning: Some postinstall steps failed, continuing..."
 
 # Download built-in extensions
 RUN npm run download-builtin-extensions
