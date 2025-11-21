@@ -8,7 +8,7 @@ Para desarrollo local con **acceso completo** a todo (sin restricciones):
 docker-compose -f docker-compose.dev.yml up
 ```
 
-Luego abre en tu navegador: **http://localhost:8080**
+Luego abre en tu navegador: **http://localhost:8889**
 
 ### Características en Modo Development:
 - ✅ **Sin autenticación** - Acceso directo
@@ -130,7 +130,7 @@ docker-compose -f docker-compose.dev.yml logs -f stackcodesy
 docker-compose -f docker-compose.prod.yml logs -f stackcodesy
 
 # Verificar salud
-curl http://localhost:8080
+curl http://localhost:8889
 ```
 
 ---

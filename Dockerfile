@@ -125,5 +125,5 @@ ENTRYPOINT ["/stackcodesy/resources/server/web/security/entrypoint.sh"]
 
 # Start StackCodeSy Web server
 # Note: The port is controlled by the PORT environment variable (default: 8080)
-# The entrypoint will pass the correct port to code-web.sh
-CMD ["./scripts/code-web.sh", "--without-connection-token"]
+# The entrypoint will pass the correct host and port to code-web.sh
+CMD ["./scripts/code-web.sh"]
