@@ -38,14 +38,18 @@ RUN npm ci --legacy-peer-deps --ignore-scripts || npm install --legacy-peer-deps
 # Copy the rest of the source code
 COPY . .
 
-# Run postinstall now that all source files are available
-# This installs dependencies for all extensions and sub-modules
-RUN npm run postinstall
-
-# Ensure build dependencies are installed (required for download-builtin-extensions)
-# The postinstall should handle this, but we'll verify it ran correctly
+# Install dependencies only for directories needed for web compilation
+# Avoid running full postinstall which fails on test/ directories
 WORKDIR /stackcodesy/build
 RUN npm ci || npm install
+
+WORKDIR /stackcodesy/remote
+RUN npm ci || npm install
+
+WORKDIR /stackcodesy/remote/web
+RUN npm ci || npm install
+
+# Return to root
 WORKDIR /stackcodesy
 
 # Download built-in extensions
