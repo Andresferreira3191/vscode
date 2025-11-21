@@ -55,12 +55,6 @@ WORKDIR /stackcodesy
 # Download built-in extensions
 RUN npm run download-builtin-extensions
 
-# Compile extensions for web
-RUN yarn gulp compile-extensions-build
-
-# Compile the workbench and core for web
-RUN yarn gulp compile-web
-
 # Compile the authentication extension
 WORKDIR /stackcodesy/extensions/stackcodesy-auth
 RUN npm install && npm run compile
