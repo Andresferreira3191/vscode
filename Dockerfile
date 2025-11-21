@@ -57,7 +57,14 @@ RUN npm run download-builtin-extensions
 
 # Compile ONLY the core client (workbench) - minimal compilation
 # This generates /stackcodesy/out/ directory with compiled workbench files
-RUN yarn gulp compile-client
+RUN echo "========================================" && \
+    echo "Starting compile-client..." && \
+    echo "========================================" && \
+    yarn gulp compile-client && \
+    echo "========================================" && \
+    echo "Compilation complete! Checking output:" && \
+    ls -la /stackcodesy/out/ | head -20 && \
+    echo "========================================"
 
 # Compile the authentication extension
 WORKDIR /stackcodesy/extensions/stackcodesy-auth
