@@ -1,0 +1,91 @@
+# StackCodeSy - Using VSCode's Official Web Server
+# Based on code-server approach: compile vscode-reh-web
+
+FROM node:22.20.0-bookworm
+
+# Install build dependencies
+RUN apt-get update && apt-get install -y \
+    build-essential \
+    g++ \
+    make \
+    python3 \
+    git \
+    libx11-dev \
+    libxkbfile-dev \
+    libsecret-1-dev \
+    curl \
+    ca-certificates \
+    jq \
+    && rm -rf /var/lib/apt/lists/*
+
+# Create user
+RUN useradd -m -u 1001 -s /bin/bash stackcodesy
+
+WORKDIR /stackcodesy
+
+# Copy everything
+COPY --chown=stackcodesy:stackcodesy . .
+
+# Install root dependencies
+RUN npm install --legacy-peer-deps
+
+# Install dependencies for build, remote, remote/web
+WORKDIR /stackcodesy/build
+RUN npm install
+
+WORKDIR /stackcodesy/remote
+RUN npm install
+
+WORKDIR /stackcodesy/remote/web
+RUN npm install
+
+WORKDIR /stackcodesy
+
+# Download built-in extensions
+RUN npm run download-builtin-extensions
+
+# Build VSCode Remote Extension Host for Web (production server)
+# This is the OFFICIAL way VSCode serves web - same as vscode.dev
+# Determine architecture
+RUN ARCH=$(uname -m) && \
+    if [ "$ARCH" = "aarch64" ]; then VSCODE_ARCH="arm64"; \
+    elif [ "$ARCH" = "x86_64" ]; then VSCODE_ARCH="x64"; \
+    else VSCODE_ARCH="$ARCH"; fi && \
+    echo "Building vscode-reh-web for linux-${VSCODE_ARCH}..." && \
+    VERSION=1.107.0 node --max-old-space-size=8192 ./node_modules/gulp/bin/gulp.js vscode-reh-web-linux-${VSCODE_ARCH} && \
+    ls -la ../vscode-reh-web-linux-${VSCODE_ARCH} && \
+    echo "Build complete!"
+
+# Compile authentication extension
+WORKDIR /stackcodesy/extensions/stackcodesy-auth
+RUN npm install && npm run compile
+
+WORKDIR /stackcodesy
+
+# Expose port
+EXPOSE 8080
+
+# Environment
+ENV HOST=0.0.0.0
+ENV PORT=8080
+ENV NODE_ENV=production
+
+# The compiled server is in ../vscode-reh-web-linux-{arch}/
+# It contains: ./node (Node.js binary), ./out/server-main.js (entry point)
+
+# Start script
+CMD ["sh", "-c", "\
+    ARCH=$(uname -m | sed 's/aarch64/arm64/;s/x86_64/x64/') && \
+    cd ../vscode-reh-web-linux-${ARCH} && \
+    echo '==========================================' && \
+    echo 'StackCodeSy - Code Editor' && \
+    echo '==========================================' && \
+    echo 'Architecture: '${ARCH} && \
+    echo 'Server: http://'${HOST}':'${PORT} && \
+    echo '==========================================' && \
+    exec ./node out/server-main.js \
+        --host ${HOST} \
+        --port ${PORT} \
+        --without-connection-token \
+        --accept-server-license-terms \
+    "]
