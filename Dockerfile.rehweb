@@ -26,18 +26,25 @@ WORKDIR /stackcodesy
 # Copy everything
 COPY --chown=stackcodesy:stackcodesy . .
 
-# Install root dependencies
-RUN npm install --legacy-peer-deps
+# Install root dependencies - SKIP postinstall scripts to avoid complex automation
+RUN npm install --legacy-peer-deps --ignore-scripts
 
-# Install dependencies for build, remote, remote/web
+# Manually install dependencies where needed
 WORKDIR /stackcodesy/build
-RUN npm install
+RUN npm install --ignore-scripts
 
 WORKDIR /stackcodesy/remote
-RUN npm install
+RUN npm install --ignore-scripts
 
 WORKDIR /stackcodesy/remote/web
-RUN npm install
+RUN npm install --ignore-scripts
+
+WORKDIR /stackcodesy
+
+# Install extensions dependencies (this is normally done in postinstall)
+# but we skip test/automation which causes the build to fail
+WORKDIR /stackcodesy/extensions
+RUN npm install --ignore-scripts
 
 WORKDIR /stackcodesy
 
