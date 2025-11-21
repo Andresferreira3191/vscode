@@ -21,49 +21,63 @@ echo -e "${BLUE}Comprehensive Security Configuration${NC}"
 echo -e "${BLUE}=========================================${NC}"
 echo ""
 
+# Fix permissions for mounted volumes
+# Ensure the stackcodesy user owns their home directory and subdirectories
+echo -e "${YELLOW}[0/6]${NC} Setting up directories and permissions..."
+mkdir -p /home/stackcodesy/.stackcodesy/data
+mkdir -p /home/stackcodesy/.stackcodesy/extensions
+mkdir -p /workspace
+chown -R stackcodesy:stackcodesy /home/stackcodesy/.stackcodesy /workspace 2>/dev/null || true
+echo -e "${GREEN}✓${NC} Directories configured"
+
 # Make all security scripts executable
 chmod +x /stackcodesy/resources/server/web/security/*.sh 2>/dev/null || true
 
 # 1. Configure Extension Marketplace Security
-echo -e "${YELLOW}[1/6]${NC} Configuring extension marketplace security..."
+echo ""
+echo -e "${YELLOW}[1/7]${NC} Configuring extension marketplace security..."
 if [ -f /stackcodesy/resources/server/web/security/configure-extensions.sh ]; then
     /stackcodesy/resources/server/web/security/configure-extensions.sh
 fi
 
 # 2. Configure Terminal Security
 echo ""
-echo -e "${YELLOW}[2/6]${NC} Configuring terminal security..."
+echo -e "${YELLOW}[2/7]${NC} Configuring terminal security..."
 if [ -f /stackcodesy/resources/server/web/security/configure-terminal.sh ]; then
     /stackcodesy/resources/server/web/security/configure-terminal.sh
 fi
 
 # 3. Configure File System Security
 echo ""
-echo -e "${YELLOW}[3/6]${NC} Configuring filesystem security..."
+echo -e "${YELLOW}[3/7]${NC} Configuring filesystem security..."
 if [ -f /stackcodesy/resources/server/web/security/configure-filesystem.sh ]; then
     /stackcodesy/resources/server/web/security/configure-filesystem.sh
 fi
 
 # 4. Configure Network Security
 echo ""
-echo -e "${YELLOW}[4/6]${NC} Configuring network security..."
+echo -e "${YELLOW}[4/7]${NC} Configuring network security..."
 if [ -f /stackcodesy/resources/server/web/security/configure-network.sh ]; then
     /stackcodesy/resources/server/web/security/configure-network.sh || echo "Network configuration skipped (requires NET_ADMIN capability)"
 fi
 
 # 5. Configure Audit Logging
 echo ""
-echo -e "${YELLOW}[5/6]${NC} Configuring audit logging..."
+echo -e "${YELLOW}[5/7]${NC} Configuring audit logging..."
 if [ -f /stackcodesy/resources/server/web/security/configure-audit-logging.sh ]; then
     /stackcodesy/resources/server/web/security/configure-audit-logging.sh
 fi
 
 # 6. Configure Content Security Policy
 echo ""
-echo -e "${YELLOW}[6/6]${NC} Configuring Content Security Policy..."
+echo -e "${YELLOW}[6/7]${NC} Configuring Content Security Policy..."
 if [ -f /stackcodesy/resources/server/web/security/configure-csp.sh ]; then
     /stackcodesy/resources/server/web/security/configure-csp.sh || echo "CSP configuration skipped"
 fi
+
+# 7. Switch to stackcodesy user
+echo ""
+echo -e "${YELLOW}[7/7]${NC} Preparing to start StackCodeSy..."
 
 # Security Summary
 echo ""
