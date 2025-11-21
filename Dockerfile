@@ -87,7 +87,8 @@ WORKDIR /stackcodesy
 COPY --from=builder --chown=stackcodesy:stackcodesy /stackcodesy /stackcodesy
 
 # Switch to non-root user
-USER stackcodesy
+# Note: Keep running as root so entrypoint can fix permissions
+# The entrypoint script will switch to stackcodesy user after setup
 
 # Expose port (can be changed via PORT env var)
 EXPOSE 8080

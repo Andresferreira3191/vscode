@@ -109,16 +109,20 @@ echo -e "${GREEN}Starting StackCodeSy Editor on ${HOST:-0.0.0.0}:${PORT:-8080}..
 echo -e "${BLUE}=========================================${NC}"
 echo ""
 
-# Execute the original command with host and port
+# Switch to stackcodesy user and execute the command
+# We run as root for permission setup, but execute the server as stackcodesy user
+echo -e "${GREEN}Switching to stackcodesy user...${NC}"
+
+# Execute the original command with host and port as stackcodesy user
 # If the command is code-web.sh, inject host and port parameters
 if [[ "$1" == *"code-web.sh"* ]]; then
     # Extract the script path and any additional arguments
     SCRIPT="$1"
     shift
 
-    # Build the command with host and port
-    exec "$SCRIPT" --host "${HOST:-0.0.0.0}" --port "${PORT:-8080}" "$@"
+    # Build the command with host and port and run as stackcodesy user
+    exec su stackcodesy -c "cd /stackcodesy && $SCRIPT --host ${HOST:-0.0.0.0} --port ${PORT:-8080} $*"
 else
-    # For other commands, execute as-is
-    exec "$@"
+    # For other commands, execute as stackcodesy user
+    exec su stackcodesy -c "$*"
 fi
