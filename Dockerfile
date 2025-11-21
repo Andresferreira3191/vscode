@@ -55,8 +55,8 @@ WORKDIR /stackcodesy
 # Download built-in extensions
 RUN npm run download-builtin-extensions
 
-# Compile StackCodeSy Web
-RUN npm run compile-web
+# Compile StackCodeSy (client code for web)
+RUN npm run compile-client
 
 # Compile the authentication extension
 WORKDIR /stackcodesy/extensions/stackcodesy-auth
