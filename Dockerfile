@@ -55,8 +55,11 @@ WORKDIR /stackcodesy
 # Download built-in extensions
 RUN npm run download-builtin-extensions
 
-# Note: We DON'T run compile-web here because @vscode/test-web
-# compiles the code at runtime when it starts with --sourcesPath
+# Compile extensions for web
+RUN yarn gulp compile-extensions-build
+
+# Compile the workbench and core for web
+RUN yarn gulp compile-web
 
 # Compile the authentication extension
 WORKDIR /stackcodesy/extensions/stackcodesy-auth
