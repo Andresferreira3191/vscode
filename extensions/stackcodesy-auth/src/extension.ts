@@ -40,7 +40,7 @@ class StackCodeSyAuthenticationProvider implements vscode.AuthenticationProvider
 	 * Get current sessions
 	 * Checks environment variables or queries your authentication API
 	 */
-	async getSessions(scopes?: readonly string[]): Promise<readonly vscode.AuthenticationSession[]> {
+	async getSessions(scopes?: readonly string[], options?: vscode.AuthenticationProviderSessionOptions): Promise<vscode.AuthenticationSession[]> {
 		// Try to get user info from environment variables (passed from your platform)
 		const userInfo = this.getUserInfoFromEnvironment();
 
@@ -129,7 +129,7 @@ class StackCodeSyAuthenticationProvider implements vscode.AuthenticationProvider
 				return null;
 			}
 
-			const data = await response.json();
+			const data = await response.json() as any;
 
 			// Expected response format from your API:
 			// {
@@ -139,10 +139,10 @@ class StackCodeSyAuthenticationProvider implements vscode.AuthenticationProvider
 			//   "token": "your-secure-token"
 			// }
 			return {
-				userId: data.userId,
-				userName: data.userName,
-				userEmail: data.userEmail,
-				token: data.token
+				userId: data.userId as string,
+				userName: data.userName as string,
+				userEmail: data.userEmail as string,
+				token: data.token as string
 			};
 		} catch (error) {
 			console.error('Failed to get user info from API:', error);
