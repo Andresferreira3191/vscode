@@ -40,7 +40,13 @@ COPY . .
 
 # Run postinstall now that all source files are available
 # This installs dependencies for all extensions and sub-modules
-RUN npm run postinstall || echo "Warning: Some postinstall steps failed, continuing..."
+RUN npm run postinstall
+
+# Ensure build dependencies are installed (required for download-builtin-extensions)
+# The postinstall should handle this, but we'll verify it ran correctly
+WORKDIR /stackcodesy/build
+RUN npm ci || npm install
+WORKDIR /stackcodesy
 
 # Download built-in extensions
 RUN npm run download-builtin-extensions
