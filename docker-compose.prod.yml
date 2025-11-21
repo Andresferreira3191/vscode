@@ -1,0 +1,162 @@
+version: '3.8'
+
+services:
+  stackcodesy:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: stackcodesy:latest
+    ports:
+      - target: 8080
+        published: ${STACKCODESY_PORT:-8080}
+        protocol: tcp
+        mode: host
+    environment:
+      # ================================
+      # Production Mode - Maximum Security
+      # ================================
+      - HOST=0.0.0.0
+      - PORT=8080
+      - NODE_ENV=production
+
+      # ================================
+      # Authentication: ENABLED
+      # ================================
+      - STACKCODESY_REQUIRE_AUTH=true
+
+      # Method 1: Direct credentials (for testing)
+      - STACKCODESY_USER_ID=${STACKCODESY_USER_ID:-}
+      - STACKCODESY_USER_NAME=${STACKCODESY_USER_NAME:-}
+      - STACKCODESY_USER_EMAIL=${STACKCODESY_USER_EMAIL:-}
+      - STACKCODESY_AUTH_TOKEN=${STACKCODESY_AUTH_TOKEN:-}
+
+      # Method 2: API endpoint (recommended)
+      - STACKCODESY_AUTH_API=${STACKCODESY_AUTH_API:-}
+
+      # ================================
+      # Terminal: RESTRICTED
+      # ================================
+      - STACKCODESY_TERMINAL_MODE=restricted
+      - STACKCODESY_TERMINAL_WORKSPACE_ONLY=true
+      - STACKCODESY_WORKSPACE_DIR=/workspace
+      - STACKCODESY_TERMINAL_ALLOWED_COMMANDS=npm,yarn,pnpm,node,git,python,python3,pip,pip3,make,go,java,mvn,gradle,rustc,cargo
+      - STACKCODESY_TERMINAL_BLOCKED_COMMANDS=rm -rf,dd,mkfs,fdisk,parted,reboot,shutdown,systemctl,sudo,su,passwd,useradd,wget,curl,nc,netcat,ssh
+      - STACKCODESY_TERMINAL_BLOCK_NETWORK=true
+      - STACKCODESY_TERMINAL_MAX_COMMAND_LENGTH=1000
+
+      # ================================
+      # Extensions: WHITELIST
+      # ================================
+      - STACKCODESY_EXTENSION_MODE=whitelist
+      - STACKCODESY_EXTENSION_WHITELIST=${STACKCODESY_EXTENSION_WHITELIST:-ms-python.python,dbaeumer.vscode-eslint,esbenp.prettier-vscode}
+      - STACKCODESY_EXTENSION_WHITELIST_FILE=/stackcodesy/config/approved-extensions.txt
+
+      # ================================
+      # File System: RESTRICTED
+      # ================================
+      - STACKCODESY_DISK_QUOTA_MB=5000
+      - STACKCODESY_MAX_FILE_SIZE_MB=100
+      - STACKCODESY_BLOCKED_FILE_TYPES=.exe,.dll,.so,.bin
+      - STACKCODESY_ENABLE_FILE_MONITORING=true
+      - STACKCODESY_READONLY_DIRS=/stackcodesy,/usr,/bin,/sbin
+
+      # ================================
+      # Network: RESTRICTED
+      # ================================
+      - STACKCODESY_ENABLE_EGRESS_FILTER=false
+      - STACKCODESY_BLOCK_ALL_OUTBOUND=false
+      - STACKCODESY_ALLOWED_PORTS=80,443
+      - STACKCODESY_ALLOWED_DOMAINS=npmjs.org,github.com,registry.npmjs.org
+      - STACKCODESY_ENABLE_DNS_FILTER=false
+
+      # ================================
+      # Audit Logging: FULL
+      # ================================
+      - STACKCODESY_ENABLE_AUDIT_LOG=true
+      - STACKCODESY_AUDIT_LOG_DIR=/var/log/stackcodesy
+      - STACKCODESY_AUDIT_LOG_RETENTION_DAYS=30
+      - STACKCODESY_LOG_TERMINAL_COMMANDS=true
+      - STACKCODESY_LOG_FILE_ACCESS=true
+      - STACKCODESY_LOG_AUTH_EVENTS=true
+
+      # ================================
+      # Content Security Policy: STRICT
+      # ================================
+      - STACKCODESY_ENABLE_CSP=true
+      - STACKCODESY_CSP_POLICY=strict
+
+    volumes:
+      - type: volume
+        source: stackcodesy-workspace
+        target: /workspace
+      - type: volume
+        source: stackcodesy-data
+        target: /home/stackcodesy/.stackcodesy
+
+    # Docker Swarm deployment configuration
+    deploy:
+      mode: replicated
+      replicas: 1
+
+      # Resource limits
+      resources:
+        limits:
+          cpus: '2.0'
+          memory: 4G
+        reservations:
+          cpus: '0.5'
+          memory: 1G
+
+      # Restart policy
+      restart_policy:
+        condition: on-failure
+        delay: 5s
+        max_attempts: 3
+        window: 120s
+
+      # Update configuration
+      update_config:
+        parallelism: 1
+        delay: 10s
+        failure_action: rollback
+        monitor: 60s
+        max_failure_ratio: 0.3
+
+      # Rollback configuration
+      rollback_config:
+        parallelism: 1
+        delay: 5s
+        failure_action: pause
+        monitor: 60s
+        max_failure_ratio: 0.3
+
+    networks:
+      - stackcodesy-network
+
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 90s
+
+    # Logging
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+        labels: "service,stack"
+
+# Volumes
+volumes:
+  stackcodesy-workspace:
+    driver: local
+  stackcodesy-data:
+    driver: local
+
+# Networks
+networks:
+  stackcodesy-network:
+    driver: overlay
+    attachable: true

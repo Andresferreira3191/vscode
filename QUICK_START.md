@@ -5,15 +5,7 @@
 Para desarrollo local con **acceso completo** a todo (sin restricciones):
 
 ```bash
-# Opción 1: Usando el archivo .env.development
-cp .env.development .env
-docker-compose up
-
-# Opción 2: Inline (sin archivo .env)
-STACKCODESY_REQUIRE_AUTH=false \
-STACKCODESY_TERMINAL_MODE=full \
-STACKCODESY_EXTENSION_MODE=full \
-docker-compose up
+docker-compose -f docker-compose.dev.yml up
 ```
 
 Luego abre en tu navegador: **http://localhost:8080**
@@ -28,19 +20,37 @@ Luego abre en tu navegador: **http://localhost:8080**
 
 ---
 
+## 🧪 Modo Staging (Seguridad Moderada)
+
+Para pruebas con **algunas restricciones**:
+
+```bash
+docker-compose -f docker-compose.staging.yml up
+```
+
+### Características en Modo Staging:
+- 🔓 **Autenticación opcional** - Configurable
+- 🔒 **Terminal restringido** - Comandos de desarrollo permitidos
+- ✅ **Todas las extensiones** - Para testing
+- 💾 **Límites moderados** - 10GB quota, archivos hasta 500MB
+- 🌐 **Red abierta** - Para probar integraciones
+- 📋 **Logs selectivos** - Solo comandos y autenticación
+
+---
+
 ## 🔒 Modo Production (Seguridad Máxima)
 
 Para producción con **restricciones de seguridad**:
 
 ```bash
-# Configura las variables de producción
-cp .env.production .env
+# Configurar autenticación (elige un método)
+export STACKCODESY_AUTH_API=https://your-platform.com/api/auth/validate
 
-# Edita .env y configura tu API de autenticación
-nano .env
+# Opción con Docker Compose
+docker-compose -f docker-compose.prod.yml up
 
-# Inicia con Docker Swarm
-docker stack deploy -c docker-compose.yml stackcodesy
+# Opción con Docker Swarm (recomendado para producción)
+docker stack deploy -c docker-compose.prod.yml stackcodesy
 ```
 
 ### Características en Modo Production:
@@ -56,8 +66,11 @@ docker stack deploy -c docker-compose.yml stackcodesy
 ## 🔧 Cambiar Puerto
 
 ```bash
-# Cambiar a puerto 3000
-STACKCODESY_PORT=3000 docker-compose up
+# Development en puerto 3000
+STACKCODESY_PORT=3000 docker-compose -f docker-compose.dev.yml up
+
+# Production en puerto 3000
+STACKCODESY_PORT=3000 docker-compose -f docker-compose.prod.yml up
 ```
 
 ---
@@ -65,10 +78,16 @@ STACKCODESY_PORT=3000 docker-compose up
 ## 🛑 Detener StackCodeSy
 
 ```bash
-# Docker Compose
-docker-compose down
+# Development
+docker-compose -f docker-compose.dev.yml down
 
-# Docker Swarm
+# Staging
+docker-compose -f docker-compose.staging.yml down
+
+# Production (Docker Compose)
+docker-compose -f docker-compose.prod.yml down
+
+# Production (Docker Swarm)
 docker stack rm stackcodesy
 ```
 
@@ -87,8 +106,11 @@ Para construir para AMD64 y ARM64 (Mac M1/M2/M3):
 ## 🔍 Verificar que está corriendo
 
 ```bash
-# Ver logs
-docker-compose logs -f stackcodesy
+# Ver logs - Development
+docker-compose -f docker-compose.dev.yml logs -f stackcodesy
+
+# Ver logs - Production
+docker-compose -f docker-compose.prod.yml logs -f stackcodesy
 
 # Verificar salud
 curl http://localhost:8080
@@ -96,44 +118,34 @@ curl http://localhost:8080
 
 ---
 
-## 🎯 Modos de Terminal
+## 📊 Comparación de Modos
 
-| Modo | Descripción | Uso |
-|------|-------------|-----|
-| `full` | Acceso completo al terminal | Desarrollo local |
-| `restricted` | Solo comandos permitidos | Usuarios confiables |
-| `disabled` | Terminal deshabilitado | Máxima seguridad |
-
-```bash
-# Terminal deshabilitado (máxima seguridad)
-STACKCODESY_TERMINAL_MODE=disabled docker-compose up
-
-# Terminal restringido (solo comandos permitidos)
-STACKCODESY_TERMINAL_MODE=restricted docker-compose up
-
-# Terminal completo (desarrollo)
-STACKCODESY_TERMINAL_MODE=full docker-compose up
-```
+| Característica | Development | Staging | Production |
+|----------------|-------------|---------|------------|
+| Autenticación | ❌ Deshabilitada | 🔄 Opcional | ✅ Requerida |
+| Terminal | ✅ Completo | 🔒 Restringido | 🔒 Restringido |
+| Extensiones | ✅ Todas | ✅ Todas | 🛡️ Whitelist |
+| Límite Disco | ∞ Sin límite | 10GB | 5GB |
+| Límite Archivo | 1000MB | 500MB | 100MB |
+| Red | ✅ Abierta | ✅ Abierta | 🔒 Filtrada |
+| Audit Logs | ❌ Deshabilitados | 📋 Selectivos | ✅ Completos |
+| CSP | ❌ Deshabilitado | 🔒 Moderado | 🔒 Estricto |
 
 ---
 
-## 🎨 Modos de Extensiones
+## 🔧 Personalización Avanzada
 
-| Modo | Descripción | Uso |
-|------|-------------|-----|
-| `full` | Todas las extensiones permitidas | Desarrollo local |
-| `whitelist` | Solo extensiones aprobadas | Producción |
-| `disabled` | Marketplace deshabilitado | Máxima seguridad |
+Si necesitas personalizar algún modo, edita el archivo correspondiente:
 
 ```bash
-# Todas las extensiones (desarrollo)
-STACKCODESY_EXTENSION_MODE=full docker-compose up
+# Editar configuración de desarrollo
+nano docker-compose.dev.yml
 
-# Solo extensiones aprobadas (producción)
-STACKCODESY_EXTENSION_MODE=whitelist docker-compose up
+# Editar configuración de staging
+nano docker-compose.staging.yml
 
-# Marketplace deshabilitado
-STACKCODESY_EXTENSION_MODE=disabled docker-compose up
+# Editar configuración de producción
+nano docker-compose.prod.yml
 ```
 
 ---
@@ -153,15 +165,28 @@ STACKCODESY_EXTENSION_MODE=disabled docker-compose up
 # Build
 docker build -t stackcodesy:latest .
 
-# Dev con acceso completo
-docker-compose up
+# Build multi-arquitectura (AMD64 + ARM64)
+./scripts/build-multiarch.sh stackcodesy latest
 
-# Producción con Docker Swarm
-docker stack deploy -c docker-compose.yml stackcodesy
+# Development (acceso completo)
+docker-compose -f docker-compose.dev.yml up
 
-# Escalar a 3 instancias
+# Staging (seguridad moderada)
+docker-compose -f docker-compose.staging.yml up
+
+# Production - Docker Compose
+docker-compose -f docker-compose.prod.yml up
+
+# Production - Docker Swarm (recomendado)
+docker stack deploy -c docker-compose.prod.yml stackcodesy
+
+# Escalar a 3 instancias (Swarm)
 docker service scale stackcodesy_stackcodesy=3
 
-# Ver logs
+# Ver logs (Swarm)
 docker service logs -f stackcodesy_stackcodesy
+
+# Detener
+docker-compose -f docker-compose.dev.yml down
+docker stack rm stackcodesy  # Para Swarm
 ```
