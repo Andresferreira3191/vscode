@@ -55,10 +55,9 @@ WORKDIR /stackcodesy
 # Download built-in extensions
 RUN npm run download-builtin-extensions
 
-# Install dependencies for extensions that need them
-RUN cd /stackcodesy/extensions/markdown-language-features && (npm ci || npm install) || true
-
-# NO pre-compilation needed - @vscode/test-web compiles on-demand
+# Compile ONLY the core client (workbench) - minimal compilation
+# This generates /stackcodesy/out/ directory with compiled workbench files
+RUN yarn gulp compile-client
 
 # Compile the authentication extension
 WORKDIR /stackcodesy/extensions/stackcodesy-auth
@@ -125,7 +124,7 @@ HEALTHCHECK --interval=30s --timeout=10s --start-period=90s --retries=3 \
 # Set entrypoint for security configuration
 ENTRYPOINT ["/stackcodesy/resources/server/web/security/entrypoint.sh"]
 
-# Start StackCodeSy Web server (@vscode/test-web with on-demand compilation)
+# Start StackCodeSy Web server (production server with pre-compiled workbench)
 # Note: The port is controlled by the PORT environment variable (default: 8080)
-# The entrypoint will pass the correct host and port to code-web.sh
-CMD ["./scripts/code-web.sh"]
+# The entrypoint will pass the correct host and port to code-web-prod.sh
+CMD ["./scripts/code-web-prod.sh"]
