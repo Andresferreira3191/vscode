@@ -123,7 +123,7 @@ HEALTHCHECK --interval=30s --timeout=10s --start-period=90s --retries=3 \
 # Set entrypoint for security configuration
 ENTRYPOINT ["/stackcodesy/resources/server/web/security/entrypoint.sh"]
 
-# Start StackCodeSy Web server
+# Start StackCodeSy Web server (production mode with pre-compiled files)
 # Note: The port is controlled by the PORT environment variable (default: 8080)
-# The entrypoint will pass the correct host and port to code-web.sh
-CMD ["./scripts/code-web.sh"]
+# The entrypoint will pass the correct host and port to code-web-prod.sh
+CMD ["./scripts/code-web-prod.sh"]

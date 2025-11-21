@@ -114,8 +114,8 @@ echo ""
 echo -e "${GREEN}Switching to stackcodesy user...${NC}"
 
 # Execute the original command with host and port as stackcodesy user
-# If the command is code-web.sh, inject host and port parameters
-if [[ "$1" == *"code-web.sh"* ]]; then
+# If the command is code-web.sh or code-web-prod.sh, inject host and port parameters
+if [[ "$1" == *"code-web.sh"* ]] || [[ "$1" == *"code-web-prod.sh"* ]]; then
     # Extract the script path and any additional arguments
     SCRIPT="$1"
     shift
