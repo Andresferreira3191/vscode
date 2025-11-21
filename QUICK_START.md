@@ -77,6 +77,8 @@ STACKCODESY_PORT=3000 docker-compose -f docker-compose.prod.yml up
 
 ## 🛑 Detener StackCodeSy
 
+### Detener sin eliminar datos
+
 ```bash
 # Development
 docker-compose -f docker-compose.dev.yml down
@@ -89,6 +91,21 @@ docker-compose -f docker-compose.prod.yml down
 
 # Production (Docker Swarm)
 docker stack rm stackcodesy
+```
+
+### Detener y eliminar TODOS los datos (volúmenes)
+
+⚠️ **ADVERTENCIA**: Esto eliminará workspace, extensiones instaladas y configuraciones
+
+```bash
+# Development - Reset completo
+docker-compose -f docker-compose.dev.yml down -v
+
+# Staging - Reset completo
+docker-compose -f docker-compose.staging.yml down -v
+
+# Production - Reset completo
+docker-compose -f docker-compose.prod.yml down -v
 ```
 
 ---
