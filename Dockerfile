@@ -55,8 +55,11 @@ WORKDIR /stackcodesy
 # Download built-in extensions
 RUN npm run download-builtin-extensions
 
-# Compile EVERYTHING for production (this takes a while but is necessary)
-RUN yarn gulp compile
+# Compile for production - focused on web only
+# compile-client: Compiles the core workbench (generates out/ directory)
+# compile-web: Compiles web-specific extensions only
+# compile-extension-media: Compiles extension media assets
+RUN yarn gulp compile-client compile-web compile-extension-media
 
 # Compile the authentication extension
 WORKDIR /stackcodesy/extensions/stackcodesy-auth
