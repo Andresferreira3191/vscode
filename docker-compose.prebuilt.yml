@@ -1,0 +1,27 @@
+services:
+  stackcodesy:
+    build:
+      context: ..
+      dockerfile: vscode/Dockerfile.prebuilt
+    image: stackcodesy:prebuilt
+    container_name: stackcodesy-prebuilt
+    ports:
+      - "8889:8080"
+    environment:
+      - HOST=0.0.0.0
+      - PORT=8080
+      - NODE_ENV=production
+    volumes:
+      - ./workspace:/workspace
+      - stackcodesy-data:/home/stackcodesy/.vscode-server
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
+
+volumes:
+  stackcodesy-data:
+    driver: local
