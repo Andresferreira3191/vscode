@@ -55,22 +55,10 @@ WORKDIR /stackcodesy
 # Download built-in extensions
 RUN npm run download-builtin-extensions
 
-# Install dependencies for ALL extensions (to avoid missing dependency errors during compilation)
-RUN for dir in /stackcodesy/extensions/*/; do \
-        if [ -f "$dir/package.json" ]; then \
-            echo "Installing dependencies for $(basename $dir)..."; \
-            cd "$dir" && (npm ci 2>/dev/null || npm install 2>/dev/null || true); \
-        fi; \
-    done
+# Install dependencies for extensions that need them
+RUN cd /stackcodesy/extensions/markdown-language-features && (npm ci || npm install) || true
 
-# Back to root
-WORKDIR /stackcodesy
-
-# Compile for production - focused on web only
-# compile-client: Compiles the core workbench (generates out/ directory)
-# compile-web: Compiles web-specific extensions only
-# compile-extension-media: Compiles extension media assets
-RUN yarn gulp compile-client compile-web compile-extension-media
+# NO pre-compilation needed - @vscode/test-web compiles on-demand
 
 # Compile the authentication extension
 WORKDIR /stackcodesy/extensions/stackcodesy-auth
@@ -137,7 +125,7 @@ HEALTHCHECK --interval=30s --timeout=10s --start-period=90s --retries=3 \
 # Set entrypoint for security configuration
 ENTRYPOINT ["/stackcodesy/resources/server/web/security/entrypoint.sh"]
 
-# Start StackCodeSy Web server (production mode with pre-compiled files)
+# Start StackCodeSy Web server (@vscode/test-web with on-demand compilation)
 # Note: The port is controlled by the PORT environment variable (default: 8080)
-# The entrypoint will pass the correct host and port to code-web-prod.sh
-CMD ["./scripts/code-web-prod.sh"]
+# The entrypoint will pass the correct host and port to code-web.sh
+CMD ["./scripts/code-web.sh"]
