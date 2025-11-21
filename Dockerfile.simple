@@ -26,16 +26,17 @@ WORKDIR /stackcodesy
 COPY --chown=stackcodesy:stackcodesy . .
 
 # Install ALL dependencies (root, build, remote, remote/web)
-RUN npm ci --legacy-peer-deps || npm install --legacy-peer-deps
+# Using npm install because package-lock.json may be out of sync
+RUN npm install --legacy-peer-deps
 
 WORKDIR /stackcodesy/build
-RUN npm ci || npm install
+RUN npm install
 
 WORKDIR /stackcodesy/remote
-RUN npm ci || npm install
+RUN npm install
 
 WORKDIR /stackcodesy/remote/web
-RUN npm ci || npm install
+RUN npm install
 
 WORKDIR /stackcodesy
 
