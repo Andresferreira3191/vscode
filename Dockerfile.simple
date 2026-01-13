@@ -1,0 +1,64 @@
+# StackCodeSy - Simple Single-Stage Build
+# Uses VSCode's built-in development server - no pre-compilation needed
+
+FROM node:22.20.0-bookworm
+
+# Install dependencies
+RUN apt-get update && apt-get install -y \
+    build-essential \
+    g++ \
+    make \
+    python3 \
+    git \
+    libx11-dev \
+    libxkbfile-dev \
+    libsecret-1-dev \
+    curl \
+    ca-certificates \
+    && rm -rf /var/lib/apt/lists/*
+
+# Create user
+RUN useradd -m -u 1001 -s /bin/bash stackcodesy
+
+WORKDIR /stackcodesy
+
+# Copy everything
+COPY --chown=stackcodesy:stackcodesy . .
+
+# Install ALL dependencies (root, build, remote, remote/web)
+# Using npm install because package-lock.json may be out of sync
+RUN npm install --legacy-peer-deps
+
+WORKDIR /stackcodesy/build
+RUN npm install
+
+WORKDIR /stackcodesy/remote
+RUN npm install
+
+WORKDIR /stackcodesy/remote/web
+RUN npm install
+
+WORKDIR /stackcodesy
+
+# Download built-in extensions
+RUN npm run download-builtin-extensions
+
+# Compile authentication extension
+WORKDIR /stackcodesy/extensions/stackcodesy-auth
+RUN npm install && npm run compile
+
+WORKDIR /stackcodesy
+
+# Expose port
+EXPOSE 8080
+
+# Environment
+ENV HOST=0.0.0.0
+ENV PORT=8080
+ENV NODE_ENV=development
+
+# Set entrypoint
+ENTRYPOINT ["/stackcodesy/resources/server/web/security/entrypoint.sh"]
+
+# Start VSCode web server (development mode - compiles on-demand)
+CMD ["./scripts/code-web.sh"]

@@ -1,0 +1,157 @@
+# StackCodeSy Production Security Configuration
+# This file extends docker-compose.yml with maximum security settings
+# Usage: docker stack deploy -c docker-compose.yml -c docker-compose.prod-security.yml stackcodesy
+
+version: '3.8'
+
+services:
+  stackcodesy:
+    environment:
+      # ================================
+      # PRODUCTION SECURITY PROFILE
+      # ================================
+
+      # Authentication - REQUIRED
+      - STACKCODESY_REQUIRE_AUTH=true
+
+      # Terminal - RESTRICTED MODE
+      - STACKCODESY_TERMINAL_MODE=restricted
+      - STACKCODESY_TERMINAL_WORKSPACE_ONLY=true
+      - STACKCODESY_TERMINAL_ALLOWED_COMMANDS=npm,yarn,pnpm,node,git,python,python3,pip,make
+      - STACKCODESY_TERMINAL_BLOCKED_COMMANDS=rm -rf,dd,sudo,wget,curl,ssh,nc
+
+      # Extensions - WHITELIST ONLY
+      - STACKCODESY_EXTENSION_MODE=whitelist
+      - STACKCODESY_EXTENSION_WHITELIST_FILE=/stackcodesy/config/approved-extensions.txt
+
+      # File System Security
+      - STACKCODESY_DISK_QUOTA_MB=3000
+      - STACKCODESY_MAX_FILE_SIZE_MB=50
+      - STACKCODESY_BLOCKED_FILE_TYPES=.exe,.dll,.so,.bin,.msi
+      - STACKCODESY_ENABLE_FILE_MONITORING=true
+
+      # Network Security
+      - STACKCODESY_ENABLE_EGRESS_FILTER=false  # Set to true with CAP_NET_ADMIN
+      - STACKCODESY_BLOCK_ALL_OUTBOUND=false
+      - STACKCODESY_ALLOWED_PORTS=80,443,22,9418
+      - STACKCODESY_ALLOWED_DOMAINS=github.com,*.npmjs.org,registry.yarnpkg.com,pypi.org
+
+      # Audit Logging - COMPREHENSIVE
+      - STACKCODESY_ENABLE_AUDIT_LOG=true
+      - STACKCODESY_AUDIT_LOG_DIR=/var/log/stackcodesy
+      - STACKCODESY_AUDIT_LOG_RETENTION_DAYS=90
+      - STACKCODESY_LOG_TERMINAL_COMMANDS=true
+      - STACKCODESY_LOG_FILE_ACCESS=true
+      - STACKCODESY_LOG_AUTH_EVENTS=true
+
+      # Content Security Policy - MODERATE
+      - STACKCODESY_ENABLE_CSP=true
+      - STACKCODESY_CSP_POLICY=moderate
+
+    # Security hardening
+    security_opt:
+      # Disable new privileges
+      - no-new-privileges:true
+      # AppArmor profile (uncomment after loading profile on host)
+      # - apparmor=stackcodesy
+      # Seccomp profile (uncomment to enable syscall filtering)
+      # - seccomp=./security/seccomp-profile.json
+
+    # Drop all capabilities, then add only required ones
+    cap_drop:
+      - ALL
+    cap_add:
+      - CHOWN
+      - DAC_OVERRIDE
+      - SETGID
+      - SETUID
+      - FOWNER
+      - KILL
+      # Uncomment for network filtering:
+      # - NET_ADMIN
+
+    # Read-only root filesystem (with tmpfs for writable areas)
+    read_only: true
+    tmpfs:
+      - /tmp:size=100M,mode=1777
+      - /home/stackcodesy/.stackcodesy:size=500M,mode=0755
+
+    # Additional volumes for logs
+    volumes:
+      - type: volume
+        source: stackcodesy-logs
+        target: /var/log/stackcodesy
+
+    # Enhanced resource limits for production
+    deploy:
+      mode: replicated
+      replicas: 3  # High availability
+
+      placement:
+        constraints:
+          - node.role == worker
+          - node.labels.environment == production
+
+      resources:
+        limits:
+          cpus: '1.5'
+          memory: 3G
+          pids: 200
+        reservations:
+          cpus: '0.5'
+          memory: 1G
+
+      restart_policy:
+        condition: on-failure
+        delay: 10s
+        max_attempts: 5
+        window: 300s
+
+      update_config:
+        parallelism: 1
+        delay: 30s
+        failure_action: rollback
+        monitor: 120s
+        max_failure_ratio: 0.2
+        order: start-first
+
+      rollback_config:
+        parallelism: 1
+        delay: 10s
+        failure_action: pause
+        monitor: 120s
+
+volumes:
+  stackcodesy-logs:
+    driver: local
+    # For distributed logging in Swarm:
+    # driver_opts:
+    #   type: nfs
+    #   o: addr=nfs-server.example.com,rw
+    #   device: ":/mnt/stackcodesy/logs"
+
+# ================================
+# Deployment Instructions
+# ================================
+#
+# 1. Load AppArmor profile (on each Swarm node):
+#    sudo cp security/apparmor-profile.txt /etc/apparmor.d/stackcodesy
+#    sudo apparmor_parser -r /etc/apparmor.d/stackcodesy
+#
+# 2. Create Docker secrets for sensitive data:
+#    echo "https://your-api.com/auth" | docker secret create stackcodesy_auth_api -
+#
+# 3. Deploy stack:
+#    docker stack deploy \
+#      -c docker-compose.yml \
+#      -c docker-compose.prod-security.yml \
+#      stackcodesy
+#
+# 4. Verify security:
+#    docker service ps stackcodesy_stackcodesy
+#    docker service logs -f stackcodesy_stackcodesy
+#    /usr/local/bin/audit-summary.sh  # Inside container
+#
+# 5. Scale as needed:
+#    docker service scale stackcodesy_stackcodesy=5
+#

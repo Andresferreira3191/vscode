@@ -1,0 +1,53 @@
+# StackCodeSy - Using PRE-BUILT vscode-reh-web
+# Run build-vscode-web.sh FIRST to compile vscode-reh-web
+# This Dockerfile assumes ../vscode-reh-web-linux-{arch} already exists
+
+FROM node:22.20.0-bookworm-slim
+
+# Install runtime dependencies
+RUN apt-get update && apt-get install -y \
+    libsecret-1-0 \
+    libkrb5-3 \
+    git \
+    ca-certificates \
+    curl \
+    && rm -rf /var/lib/apt/lists/*
+
+# Create user
+RUN useradd -m -u 1001 -s /bin/bash stackcodesy
+
+# Detect architecture and copy pre-built server
+WORKDIR /
+COPY --chown=stackcodesy:stackcodesy ../vscode-reh-web-linux-*/ /vscode-server/
+
+# Verify server exists
+RUN ls -la /vscode-server/ && \
+    test -f /vscode-server/node && \
+    test -f /vscode-server/out/server-main.js && \
+    echo "✓ Pre-built server found"
+
+# Switch to stackcodesy user
+USER stackcodesy
+WORKDIR /vscode-server
+
+# Expose port
+EXPOSE 8080
+
+# Environment
+ENV HOST=0.0.0.0
+ENV PORT=8080
+ENV NODE_ENV=production
+
+# Start server
+CMD ["sh", "-c", "\
+    echo '==========================================' && \
+    echo 'StackCodeSy - Code Editor' && \
+    echo '==========================================' && \
+    echo 'Server: http://'${HOST}':'${PORT} && \
+    echo '==========================================' && \
+    exec ./node out/server-main.js \
+        --host ${HOST} \
+        --port ${PORT} \
+        --without-connection-token \
+        --accept-server-license-terms \
+    "]

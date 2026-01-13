@@ -1,0 +1,64 @@
+version: '3.8'
+
+services:
+  stackcodesy:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: stackcodesy:latest
+    container_name: stackcodesy-dev
+    ports:
+      - "8889:8080"
+    environment:
+      # ================================
+      # Development Mode - Full Access
+      # ================================
+      - HOST=0.0.0.0
+      - PORT=8080
+      - NODE_ENV=development
+
+      # Authentication: DISABLED
+      - STACKCODESY_REQUIRE_AUTH=false
+
+      # Terminal: FULL ACCESS
+      - STACKCODESY_TERMINAL_MODE=full
+
+      # Extensions: FULL ACCESS
+      - STACKCODESY_EXTENSION_MODE=full
+
+      # File System: NO RESTRICTIONS
+      - STACKCODESY_DISK_QUOTA_MB=0
+      - STACKCODESY_MAX_FILE_SIZE_MB=1000
+      - STACKCODESY_BLOCKED_FILE_TYPES=
+      - STACKCODESY_ENABLE_FILE_MONITORING=false
+      - STACKCODESY_READONLY_DIRS=
+
+      # Network: NO RESTRICTIONS
+      - STACKCODESY_ENABLE_EGRESS_FILTER=false
+      - STACKCODESY_BLOCK_ALL_OUTBOUND=false
+
+      # Audit Logging: MINIMAL
+      - STACKCODESY_ENABLE_AUDIT_LOG=false
+      - STACKCODESY_LOG_TERMINAL_COMMANDS=false
+      - STACKCODESY_LOG_FILE_ACCESS=false
+
+      # Content Security Policy: RELAXED
+      - STACKCODESY_ENABLE_CSP=false
+
+    volumes:
+      # Mount local directory for development
+      - ./workspace:/workspace
+      - stackcodesy-data-dev:/home/stackcodesy/.stackcodesy
+
+    restart: unless-stopped
+
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 90s
+
+volumes:
+  stackcodesy-data-dev:
+    driver: local

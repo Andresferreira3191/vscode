@@ -1,0 +1,60 @@
+# StackCodeSy Multi-Architecture Build Configuration
+# This file configures Docker Compose to build for multiple architectures
+# Supports: linux/amd64 (Intel/AMD) and linux/arm64 (Mac M1/M2/M3, ARM servers)
+
+version: '3.8'
+
+services:
+  stackcodesy:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      platforms:
+        - linux/amd64
+        - linux/arm64
+    image: stackcodesy:latest
+    ports:
+      - "${STACKCODESY_PORT:-8080}:${STACKCODESY_PORT:-8080}"
+    environment:
+      - HOST=${STACKCODESY_HOST:-0.0.0.0}
+      - PORT=${STACKCODESY_PORT:-8080}
+      - NODE_ENV=${NODE_ENV:-production}
+      - STACKCODESY_REQUIRE_AUTH=${STACKCODESY_REQUIRE_AUTH:-false}
+      - STACKCODESY_TERMINAL_MODE=${STACKCODESY_TERMINAL_MODE:-full}
+    volumes:
+      - stackcodesy-workspace:/workspace
+      - stackcodesy-data:/home/stackcodesy/.stackcodesy
+    restart: unless-stopped
+
+volumes:
+  stackcodesy-workspace:
+    driver: local
+  stackcodesy-data:
+    driver: local
+
+# ================================
+# Usage Instructions
+# ================================
+#
+# Prerequisites:
+#   1. Install Docker Desktop (includes buildx) or
+#   2. Install Docker with buildx plugin
+#
+# Build for current architecture only:
+#   docker compose build
+#
+# Build for multiple architectures:
+#   docker buildx create --use --name stackcodesy-builder
+#   docker buildx build --platform linux/amd64,linux/arm64 -t stackcodesy:latest .
+#
+# Or use the provided script:
+#   ./scripts/build-multiarch.sh stackcodesy latest
+#
+# Run on Mac M1/M2/M3 (ARM64):
+#   docker compose up
+#
+# Run on Intel/AMD Linux (AMD64):
+#   docker compose up
+#
+# Docker will automatically use the correct architecture image
+#
